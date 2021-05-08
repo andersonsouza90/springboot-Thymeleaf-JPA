@@ -1,6 +1,7 @@
 package com.springboot3.model;
 
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -10,10 +11,15 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 
 @Entity
@@ -26,7 +32,7 @@ public class Pessoa implements Serializable{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long id;
+	private Long id;
 	
 	@javax.validation.constraints.NotNull(message = "Nome não pode ser nulo")
 	@NotEmpty(message = "nome não pode ser vazio!")
@@ -47,11 +53,53 @@ public class Pessoa implements Serializable{
 	private String ibge;
 	private String sexopessoa;
 	
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private java.util.Date dataNascimento;
+	
 	@ManyToOne
 	private Profissao profissao;
 	
 	@Enumerated(EnumType.STRING)
 	private Cargo cargo;
+	
+	@Lob
+	private byte[] curriculo;
+	
+	private String nomeFileCurriculo;
+	private String tipoFileCurriculo;
+	
+	public void setNomeFileCurriculo(String nomeFileCurriculo) {
+		this.nomeFileCurriculo = nomeFileCurriculo;
+	}
+	
+	public String getNomeFileCurriculo() {
+		return nomeFileCurriculo;
+	}
+	
+	public void setTipoFileCurriculo(String tipoFileCurriculo) {
+		this.tipoFileCurriculo = tipoFileCurriculo;
+	}
+	public String getTipoFileCurriculo() {
+		return tipoFileCurriculo;
+	}
+	
+	public void setCurriculo(byte[] curriculo) {
+		this.curriculo = curriculo;
+	}
+	
+	public byte[] getCurriculo() {
+		return curriculo;
+	}
+	
+	public void setDataNascimento(java.util.Date dataNascimento) {
+		this.dataNascimento = dataNascimento;
+	}
+	
+	public java.util.Date getDataNascimento() {
+		return dataNascimento;
+	}
+	
 	
 	public Cargo getCargo() {
 		return cargo;
@@ -94,10 +142,10 @@ public class Pessoa implements Serializable{
 	public void setIdade(int idade) {
 		this.idade = idade;
 	}
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getNome() {

@@ -1,5 +1,6 @@
 package com.springboot3.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.springboot3.model.Pessoa;
@@ -56,8 +59,8 @@ public class PessoaController {
 		return andView;
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "**/salvarpessoa")
-	public ModelAndView salvar(@Valid Pessoa pessoa, BindingResult bindingResult) {
+	@RequestMapping(method = RequestMethod.POST, value = "**/salvarpessoa", consumes = {"multipart/form-data"})
+	public ModelAndView salvar(@Valid Pessoa pessoa, BindingResult bindingResult, final MultipartFile file) throws IOException {
 		
 		pessoa.setTelefones(telefoneRepository.getTelefones(pessoa.getId()));
 		
@@ -77,6 +80,20 @@ public class PessoaController {
 			andView.addObject("msg", msg);
 			
 			return andView;
+		}
+		
+		if(file.getSize() > 0) {
+			pessoa.setCurriculo(file.getBytes());
+			pessoa.setTipoFileCurriculo(file.getContentType());
+			pessoa.setNomeFileCurriculo(file.getOriginalFilename());
+			
+		}else {
+			if(pessoa.getId() != null && pessoa.getId() > 0) {
+				Pessoa pessoaTemp = pessoaRepository.findById(pessoa.getId()).get();
+				pessoa.setCurriculo(pessoaTemp.getCurriculo());
+				pessoa.setTipoFileCurriculo(pessoaTemp.getTipoFileCurriculo());
+				pessoa.setNomeFileCurriculo(pessoaTemp.getNomeFileCurriculo());
+			}
 		}
 		
 		pessoaRepository.save(pessoa);
@@ -255,4 +272,29 @@ public class PessoaController {
 		return mv;
 		
 	}
+	
+	@GetMapping("**/baixarcurriculo/{idpessoa}")
+	public void baixarCurriculo(@PathVariable("idpessoa") Long idpessoa, 
+			HttpServletResponse response) throws IOException {
+		/*Consulta o objeto no banco de dados*/
+		Pessoa pessoa = pessoaRepository.findById(idpessoa).get();
+		if(pessoa.getCurriculo() != null) {
+			/**Setar o tamanho da resposta**/
+			response.setContentLength(pessoa.getCurriculo().length);
+			/*Tipo do arquivo do banco de dados ou pode ser genérico application/octet-stream*/
+			response.setContentType(pessoa.getTipoFileCurriculo());
+			
+			/*Define cabeçalho da resposta*/
+			String headerKey = "Content-Disposition";
+			String headerValue = String.format("attachment; filename=\"%s\"", pessoa.getNomeFileCurriculo());
+			response.setHeader(headerKey, headerValue);
+			
+			/*Finaliza resposta passando o arquivo*/
+			response.getOutputStream().write(pessoa.getCurriculo());
+			
+		}
+	}
+	
+	
+	
 }

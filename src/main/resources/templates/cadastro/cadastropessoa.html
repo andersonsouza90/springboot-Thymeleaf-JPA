@@ -16,6 +16,10 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" >
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gijgo/1.9.13/combined/js/gijgo.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gijgo/1.9.13/combined/css/gijgo.min.css" >
+
+
 </head>
 <body>
 
@@ -34,7 +38,7 @@
 	
 	
 		<form action="salvarpessoa" method="post" th:object="${pessoaobj}"
-			class="col s12" id="formPessoa">
+			class="col s12" id="formPessoa" enctype="multipart/form-data">
 
 			<div class="row">
 				<div class="input-field col s12">
@@ -94,6 +98,19 @@
 				</div>
 				
 			</div>
+			
+			<div class="row">
+				<div class="input-field col s6">
+					<label for="file" class="active">Currículo</label>
+					<input name="file" type="file" class="file-field input-field">
+				</div>
+				
+				<div class="input-field col s6">
+					<label for="dataNascimento" class="active">Data Nascimento</label>
+					<input name="dataNascimento" id="dataNascimento" type="date" th:field="*{dataNascimento}">
+				</div>
+			</div>
+			
 			
 			<div class="row">
 				<div class="input-field col s6">
@@ -194,7 +211,7 @@
 			<th>Id</th>
 			<th>Nome</th>
 			<th>Sobrenome</th>
-			<th>Idade</th>
+			<th>Curriculo</th>
 			<th>#</th>
 			<th>#</th>
 		</tr>
@@ -202,13 +219,13 @@
 			<td th:text=${pessoa.id}></td>
 			<td><a th:href="@{/telefones/{idpessoa}(idpessoa=${pessoa.id})}"><span th:text=${pessoa.nome}></span></a></td>
 			<td th:text=${pessoa.sobrenome}></td>
-			<td th:text=${pessoa.idade}></td>
-			<td><a
-				th:href="@{/editarpessoa/{idpessoa}(idpessoa=${pessoa.id})}">
-					Editar </a></td>
-			<td><a
-				th:href="@{/excluirpessoa/{idpessoa}(idpessoa=${pessoa.id})}">
-					Excluir </a></td>
+			<td>
+				<a th:if="${pessoa.curriculo != null}" th:href="@{/baixarcurriculo/{idpessoa}(idpessoa=${pessoa.id})}"> Download </a>
+				<a th:if="${pessoa.curriculo == null}"> Não existe </a>
+				
+			</td>
+			<td><a th:href="@{/editarpessoa/{idpessoa}(idpessoa=${pessoa.id})}"> Editar </a></td>
+			<td><a th:href="@{/excluirpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Excluir </a></td>
 		</tr>
 	</table>
 
@@ -223,6 +240,11 @@
     <script>
 
         $(document).ready(function() {
+        
+        	$('#dataNascimento').datepicker({
+        		showOtherMonths: true,
+        		format: 'yyyy-mm-dd'
+        	});
 
             function limpa_formulário_cep() {
                 // Limpa valores do formulário de cep.
