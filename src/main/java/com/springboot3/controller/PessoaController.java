@@ -65,8 +65,13 @@ public class PessoaController {
 	}
 	
 	@GetMapping("pessoaspag")
-	public ModelAndView carregaPessoaPorPaginacao(@PageableDefault(size = 5) org.springframework.data.domain.Pageable pageable, 
+	public ModelAndView carregaPessoaPorPaginacao(@RequestParam("page") int currentPage,
+			@RequestParam("size") int qtdRegisto,
 			ModelAndView model, @RequestParam("nomepesquisa") String nomepesquisa) {
+		
+		//configura o order by 
+		Sort sort = Sort.by(Sort.Direction.ASC, "nome"); 
+		PageRequest pageable = PageRequest.of(currentPage, qtdRegisto, sort); 
 		
 		Page<Pessoa> pagePessoa = pessoaRepository.findPessoaByNamePage(nomepesquisa, pageable);
 		model.addObject("pessoas", pagePessoa);
@@ -141,6 +146,14 @@ public class PessoaController {
 		
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
 		Optional<Pessoa> p = pessoaRepository.findById(idpessoa);
+		
+		//configura o order by 
+		Sort sort = Sort.by(Sort.Direction.ASC, "nome"); 
+		PageRequest pageable = PageRequest.of(0, 5, sort); 
+		
+		Page<Pessoa> pagePessoa = pessoaRepository.findPessoaByNamePage(null, pageable);
+		
+		modelAndView.addObject("pessoas", pagePessoa);		
 		modelAndView.addObject("pessoaobj", p.get());
 		modelAndView.addObject("profissoes", profissaoRepository.findAll());
 		return modelAndView;
